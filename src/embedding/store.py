@@ -70,3 +70,11 @@ class VectorStore:
 
     def count(self) -> int:
         return self._col.count()
+
+    def clear_all(self) -> None:
+        """Delete and recreate the collection, leaving it empty but usable."""
+        self._client.delete_collection(self._col.name)
+        self._col = self._client.get_or_create_collection(
+            name=self._col.name,
+            metadata={"hnsw:space": "cosine"},
+        )

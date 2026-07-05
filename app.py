@@ -2,7 +2,7 @@ import streamlit as st
 from pathlib import Path
 
 from src.ingestion import normalize_filename
-from src.embedding import Embedder, VectorStore, ingest_document
+from src.embedding import Embedder, VectorStore, ingest_document, ingest_codebase
 from src.retrieval import CrossEncoderReranker, build_bm25_from_store
 from src.generation import OllamaProvider, answer_query
 
@@ -38,6 +38,8 @@ if "bm25_index" not in st.session_state:
     st.session_state.bm25_index = None
 if "history" not in st.session_state:
     st.session_state.history = []
+if "confirm_clear" not in st.session_state:
+    st.session_state.confirm_clear = False
 
 
 def _already_in_store(norm_name: str) -> bool:
@@ -84,11 +86,66 @@ with st.sidebar:
                 except Exception as e:
                     st.error(f"Ingestion failed: {e}")
 
+    st.divider()
+    st.markdown("**Ingest a codebase**")
+    code_dir = st.text_input(
+        "Directory path (.py files)",
+        placeholder="e.g. e:/samarth/Work/DocMind/src",
+        help="All .py files in this directory (recursively) are chunked by function/class using AST parsing.",
+    )
+    if st.button("Ingest codebase") and code_dir:
+        from pathlib import Path as _Path
+        p = _Path(code_dir)
+        if not p.is_dir():
+            st.error(f"Directory not found: {code_dir}")
+        else:
+            label = p.name
+            if label in st.session_state.ingested_docs:
+                st.info(f"{label} already ingested this session.")
+            else:
+                with st.spinner(f"Ingesting {label}…"):
+                    try:
+                        n = ingest_codebase(code_dir, get_store(), get_embedder())
+                        st.session_state.bm25_index = build_bm25_from_store(get_store())
+                        st.session_state.ingested_docs.append(label)
+                        st.success(f"✓ {label} — {n} code chunks indexed")
+                    except Exception as e:
+                        st.error(f"Ingestion failed: {e}")
+
     if st.session_state.ingested_docs:
         st.divider()
         st.markdown("**Ingested documents**")
         for doc in st.session_state.ingested_docs:
             st.markdown(f"- {doc}")
+
+    st.divider()
+    if not st.session_state.confirm_clear:
+        if st.button("🗑️ Clear all data", help="Wipes vectorstore, BM25 index, and uploaded files."):
+            st.session_state.confirm_clear = True
+            st.rerun()
+    else:
+        st.warning("This will delete all ingested documents, code, and uploaded files. Cannot be undone.")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Yes, clear everything", type="primary"):
+                try:
+                    get_store().clear_all()
+                    # Delete uploaded raw files (keep .gitkeep)
+                    for f in RAW_DIR.iterdir():
+                        if f.name != ".gitkeep":
+                            f.unlink(missing_ok=True)
+                    st.session_state.ingested_docs = []
+                    st.session_state.bm25_index = None
+                    st.session_state.history = []
+                    st.session_state.confirm_clear = False
+                    st.success("All data cleared.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Clear failed: {e}")
+        with col2:
+            if st.button("Cancel"):
+                st.session_state.confirm_clear = False
+                st.rerun()
 
 # ── main area ─────────────────────────────────────────────────────────────────
 
@@ -149,4 +206,10 @@ for item in reversed(st.session_state.history):
             score = chunk.get("rerank_score", chunk.get("rrf_score", ""))
             score_str = f"  `rerank={score:.2f}`" if isinstance(score, float) else ""
             st.markdown(f"**#{i} — {chunk['source']}, page {page}**{score_str}")
-            st.caption(chunk["text"][:400] + ("…" if len(chunk["text"]) > 400 else ""))
+            preview = chunk["text"][:400] + ("…" if len(chunk["text"]) > 400 else "")
+            # Code chunks (page=None) must render via st.code to avoid Markdown
+            # misinterpreting # comments, underscores, backticks, etc.
+            if chunk["page"] in (None, -1):
+                st.code(preview, language="python")
+            else:
+                st.caption(preview)

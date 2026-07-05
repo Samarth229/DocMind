@@ -33,6 +33,37 @@ streamlit run app.py
 
 Then open http://localhost:8501, upload a PDF or .txt file, and ask questions.
 
+## Running the API
+
+Streamlit (`app.py`) and the REST API (`api/main.py`) are two independent front doors to the same underlying pipeline — both call `src/*` directly, no logic is duplicated. You can run either or both.
+
+```bash
+# Start Ollama first (same prereq as Streamlit)
+ollama serve
+
+# Launch the FastAPI server
+uvicorn api.main:app --reload
+```
+
+Then open http://localhost:8000/docs for the interactive OpenAPI UI, or call the endpoints directly:
+
+```bash
+# Ingest a document
+curl -X POST http://localhost:8000/ingest \
+     -F "file=@data/raw/ACA_Report.pdf"
+
+# Ask a question
+curl -X POST http://localhost:8000/query \
+     -H "Content-Type: application/json" \
+     -d '{"question": "what is the model adapter layer", "k": 5}'
+
+# List ingested documents
+curl http://localhost:8000/documents
+
+# Health check
+curl http://localhost:8000/health
+```
+
 ## Architecture
 
 The pipeline runs entirely locally:
@@ -68,7 +99,9 @@ PDF / TXT
                        verifies each cited chunk was actually in the retrieved context
    │
    ▼
-[Streamlit UI]  Upload → Ask → Answer + sources + citation badge
+[Streamlit UI / FastAPI]  Two independent entrypoints to the same pipeline:
+                           • app.py  → Streamlit interactive demo (localhost:8501)
+                           • api/main.py → REST API with OpenAPI docs (localhost:8000/docs)
 ```
 
 **Key design decisions:**

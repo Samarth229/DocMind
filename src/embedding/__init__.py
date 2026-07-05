@@ -1,5 +1,5 @@
 from .embedder import Embedder
 from .store import VectorStore
-from .pipeline import ingest_document
+from .pipeline import ingest_document, ingest_codebase
 
-__all__ = ["Embedder", "VectorStore", "ingest_document"]
+__all__ = ["Embedder", "VectorStore", "ingest_document", "ingest_codebase"]
