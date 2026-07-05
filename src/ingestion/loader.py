@@ -7,6 +7,16 @@ from pypdf import PdfReader
 logger = logging.getLogger(__name__)
 
 
+def normalize_filename(filename: str) -> str:
+    """
+    Canonical source name used in all chunk metadata and citation matching.
+    Spaces → underscores, strip leading/trailing whitespace.
+    Case is preserved — filename casing is kept consistent to avoid silent
+    mismatches between OS-level files and stored metadata.
+    """
+    return filename.strip().replace(" ", "_")
+
+
 def _clean(text: str) -> str:
     # Collapse runs of whitespace/newlines; trim edges.
     # Known limitation: does not strip page headers/footers — those vary
@@ -18,6 +28,7 @@ def _clean(text: str) -> str:
 
 def load_pdf(file_path: str) -> list[dict]:
     path = Path(file_path)
+    source = normalize_filename(path.name)
     reader = PdfReader(str(path))
     pages = []
     for i, page in enumerate(reader.pages, start=1):
@@ -25,16 +36,17 @@ def load_pdf(file_path: str) -> list[dict]:
         text = _clean(raw)
         if not text:
             # Likely a scanned/image-only page — no OCR support yet.
-            logger.warning("Page %d of '%s' yielded no text (image-only?); skipping.", i, path.name)
+            logger.warning("Page %d of '%s' yielded no text (image-only?); skipping.", i, source)
             continue
-        pages.append({"text": text, "source": path.name, "page": i})
+        pages.append({"text": text, "source": source, "page": i})
     return pages
 
 
 def load_text(file_path: str) -> list[dict]:
     path = Path(file_path)
+    source = normalize_filename(path.name)
     text = _clean(path.read_text(encoding="utf-8"))
-    return [{"text": text, "source": path.name, "page": None}]
+    return [{"text": text, "source": source, "page": None}]
 
 
 def load_document(file_path: str) -> list[dict]:

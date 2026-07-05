@@ -1,6 +1,36 @@
 import pytest
 from pathlib import Path
-from src.ingestion import load_document, load_text, load_pdf
+from src.ingestion import load_document, load_text, load_pdf, normalize_filename
+
+
+# ── normalize_filename ────────────────────────────────────────────────────────
+
+def test_normalize_spaces_to_underscores():
+    assert normalize_filename("ACA Report.pdf") == "ACA_Report.pdf"
+
+def test_normalize_multiple_spaces():
+    assert normalize_filename("my  doc  name.pdf") == "my__doc__name.pdf"
+
+def test_normalize_strips_whitespace():
+    assert normalize_filename("  file.txt  ") == "file.txt"
+
+def test_normalize_already_clean():
+    assert normalize_filename("ACA_Report.pdf") == "ACA_Report.pdf"
+
+def test_normalize_preserves_case():
+    assert normalize_filename("MyDoc.PDF") == "MyDoc.PDF"
+
+def test_normalize_applied_in_load_text():
+    # source metadata must use normalized name even if file has spaces in name.
+    import tempfile, os
+    with tempfile.NamedTemporaryFile(suffix=".txt", prefix="my doc ", delete=False, mode="w") as f:
+        f.write("hello world")
+        tmp = f.name
+    try:
+        records = load_text(tmp)
+        assert " " not in records[0]["source"]
+    finally:
+        os.unlink(tmp)
 
 RAW = Path(__file__).parent.parent / "data" / "raw"
 SAMPLE_TXT = RAW / "sample.txt"

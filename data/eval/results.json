@@ -1,0 +1,368 @@
+{
+  "k": 5,
+  "n_queries": 25,
+  "dense": {
+    "mean_precision_at_k": 0.2,
+    "mean_recall_at_k": 0.6546666666666667,
+    "mrr": 0.6246666666666667,
+    "per_query": [
+      {
+        "query": "what is ATLAS",
+        "category": "easy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "rr": 0.0
+      },
+      {
+        "query": "what are the system limitations of ATLAS",
+        "category": "easy",
+        "precision": 0.2,
+        "recall": 0.2,
+        "rr": 1.0
+      },
+      {
+        "query": "what is the model adapter layer",
+        "category": "easy",
+        "precision": 0.6,
+        "recall": 1.0,
+        "rr": 0.5
+      },
+      {
+        "query": "what are the future architecture upgrades planned for ATLAS",
+        "category": "easy",
+        "precision": 0.2,
+        "recall": 0.3333333333333333,
+        "rr": 0.25
+      },
+      {
+        "query": "what is the Atlas Engine",
+        "category": "easy",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 1.0
+      },
+      {
+        "query": "what are the project objectives of ATLAS",
+        "category": "easy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "rr": 0.0
+      },
+      {
+        "query": "goal_alignment_query intent classification",
+        "category": "keyword",
+        "precision": 0.0,
+        "recall": 0.0,
+        "rr": 0.0
+      },
+      {
+        "query": "atlas_engine_v0_2",
+        "category": "keyword",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 1.0
+      },
+      {
+        "query": "separation of concerns architecture principle",
+        "category": "keyword",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.25
+      },
+      {
+        "query": "rule-based intent classification keyword matching",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 1.0
+      },
+      {
+        "query": "adapter-based model architecture",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "emotional stability score calculation",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "HNSW cosine similarity vector search",
+        "category": "keyword",
+        "precision": 0.0,
+        "recall": 0.0,
+        "rr": 0.0
+      },
+      {
+        "query": "how does the system keep track of past interactions",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 1.0
+      },
+      {
+        "query": "how does ATLAS figure out what the user wants",
+        "category": "semantic",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 0.3333333333333333
+      },
+      {
+        "query": "why can the system not understand spoken commands",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how is the system designed to plug in different AI models without changing the core",
+        "category": "semantic",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how does ATLAS generate a response to the user",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 0.25
+      },
+      {
+        "query": "what happens step by step when a user sends a message to ATLAS",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.3333333333333333,
+        "rr": 0.3333333333333333
+      },
+      {
+        "query": "what are the strengths of the ATLAS design",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.2
+      },
+      {
+        "query": "how does ATLAS plan to support robots in future",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.5
+      },
+      {
+        "query": "what testing framework does ATLAS use for unit tests",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what software license is ATLAS released under",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what is the quadratic formula",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how do you integrate sin x",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      }
+    ]
+  },
+  "hybrid": {
+    "mean_precision_at_k": 0.272,
+    "mean_recall_at_k": 0.8573333333333334,
+    "mrr": 0.8866666666666667,
+    "per_query": [
+      {
+        "query": "what is ATLAS",
+        "category": "easy",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 1.0
+      },
+      {
+        "query": "what are the system limitations of ATLAS",
+        "category": "easy",
+        "precision": 0.6,
+        "recall": 0.6,
+        "rr": 1.0
+      },
+      {
+        "query": "what is the model adapter layer",
+        "category": "easy",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 1.0
+      },
+      {
+        "query": "what are the future architecture upgrades planned for ATLAS",
+        "category": "easy",
+        "precision": 0.6,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what is the Atlas Engine",
+        "category": "easy",
+        "precision": 0.6,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what are the project objectives of ATLAS",
+        "category": "easy",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "goal_alignment_query intent classification",
+        "category": "keyword",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "atlas_engine_v0_2",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "separation of concerns architecture principle",
+        "category": "keyword",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "rule-based intent classification keyword matching",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 1.0
+      },
+      {
+        "query": "adapter-based model architecture",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "emotional stability score calculation",
+        "category": "keyword",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "HNSW cosine similarity vector search",
+        "category": "keyword",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.5
+      },
+      {
+        "query": "how does the system keep track of past interactions",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 1.0
+      },
+      {
+        "query": "how does ATLAS figure out what the user wants",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.3333333333333333,
+        "rr": 0.5
+      },
+      {
+        "query": "why can the system not understand spoken commands",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.3333333333333333
+      },
+      {
+        "query": "how is the system designed to plug in different AI models without changing the core",
+        "category": "semantic",
+        "precision": 0.4,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how does ATLAS generate a response to the user",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 0.5,
+        "rr": 0.5
+      },
+      {
+        "query": "what happens step by step when a user sends a message to ATLAS",
+        "category": "semantic",
+        "precision": 0.4,
+        "recall": 0.6666666666666666,
+        "rr": 1.0
+      },
+      {
+        "query": "what are the strengths of the ATLAS design",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how does ATLAS plan to support robots in future",
+        "category": "semantic",
+        "precision": 0.2,
+        "recall": 1.0,
+        "rr": 0.3333333333333333
+      },
+      {
+        "query": "what testing framework does ATLAS use for unit tests",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what software license is ATLAS released under",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "what is the quadratic formula",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      },
+      {
+        "query": "how do you integrate sin x",
+        "category": "no-answer",
+        "precision": 0.0,
+        "recall": 1.0,
+        "rr": 1.0
+      }
+    ]
+  }
+}

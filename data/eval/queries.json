@@ -1,0 +1,127 @@
+[
+  {
+    "_category": "easy",
+    "query": "what is ATLAS",
+    "relevant_chunk_ids": ["ACA_Report_p6_c0", "ACA_Report_p2_c0"]
+  },
+  {
+    "_category": "easy",
+    "query": "what are the system limitations of ATLAS",
+    "relevant_chunk_ids": ["ACA_Report_p33_c0", "ACA_Report_p34_c0", "ACA_Report_p35_c0", "ACA_Report_p36_c0", "ACA_Report_p37_c0"]
+  },
+  {
+    "_category": "easy",
+    "query": "what is the model adapter layer",
+    "relevant_chunk_ids": ["ACA_Report_p22_c0", "ACA_Report_p26_c0", "ACA_Report_p43_c0"]
+  },
+  {
+    "_category": "easy",
+    "query": "what are the future architecture upgrades planned for ATLAS",
+    "relevant_chunk_ids": ["ACA_Report_p38_c0", "ACA_Report_p39_c0", "ACA_Report_p40_c0"]
+  },
+  {
+    "_category": "easy",
+    "query": "what is the Atlas Engine",
+    "relevant_chunk_ids": ["ACA_Report_p18_c0", "ACA_Report_p19_c0", "ACA_Report_p15_c0"]
+  },
+  {
+    "_category": "easy",
+    "query": "what are the project objectives of ATLAS",
+    "relevant_chunk_ids": ["ACA_Report_p7_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "goal_alignment_query intent classification",
+    "relevant_chunk_ids": ["ACA_Report_p20_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "atlas_engine_v0_2",
+    "relevant_chunk_ids": ["ACA_Report_p19_c0", "ACA_Report_p18_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "separation of concerns architecture principle",
+    "relevant_chunk_ids": ["ACA_Report_p8_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "rule-based intent classification keyword matching",
+    "relevant_chunk_ids": ["ACA_Report_p34_c0", "ACA_Report_p19_c0", "ACA_Report_p20_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "adapter-based model architecture",
+    "relevant_chunk_ids": ["ACA_Report_p43_c0", "ACA_Report_p22_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "emotional stability score calculation",
+    "relevant_chunk_ids": ["ACA_Report_p32_c0", "ACA_Report_p35_c0"]
+  },
+  {
+    "_category": "keyword",
+    "query": "HNSW cosine similarity vector search",
+    "relevant_chunk_ids": ["ACA_Report_p45_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "how does the system keep track of past interactions",
+    "relevant_chunk_ids": ["ACA_Report_p22_c0", "ACA_Report_p36_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "how does ATLAS figure out what the user wants",
+    "relevant_chunk_ids": ["ACA_Report_p19_c0", "ACA_Report_p20_c0", "ACA_Report_p13_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "why can the system not understand spoken commands",
+    "relevant_chunk_ids": ["ACA_Report_p37_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "how is the system designed to plug in different AI models without changing the core",
+    "relevant_chunk_ids": ["ACA_Report_p42_c0", "ACA_Report_p43_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "how does ATLAS generate a response to the user",
+    "relevant_chunk_ids": ["ACA_Report_p26_c0", "ACA_Report_p25_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "what happens step by step when a user sends a message to ATLAS",
+    "relevant_chunk_ids": ["ACA_Report_p25_c0", "ACA_Report_p13_c0", "ACA_Report_p26_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "what are the strengths of the ATLAS design",
+    "relevant_chunk_ids": ["ACA_Report_p48_c0"]
+  },
+  {
+    "_category": "semantic",
+    "query": "how does ATLAS plan to support robots in future",
+    "relevant_chunk_ids": ["ACA_Report_p41_c0"]
+  },
+  {
+    "_category": "no-answer",
+    "query": "what testing framework does ATLAS use for unit tests",
+    "relevant_chunk_ids": []
+  },
+  {
+    "_category": "no-answer",
+    "query": "what software license is ATLAS released under",
+    "relevant_chunk_ids": []
+  },
+  {
+    "_category": "no-answer",
+    "query": "what is the quadratic formula",
+    "relevant_chunk_ids": []
+  },
+  {
+    "_category": "no-answer",
+    "query": "how do you integrate sin x",
+    "relevant_chunk_ids": []
+  }
+]
