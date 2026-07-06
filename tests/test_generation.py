@@ -40,10 +40,12 @@ def test_build_prompt_contains_source_labels():
     assert "[Source: doc.pdf, Page 1]" in prompt
     assert "[Source: doc.pdf, Page 2]" in prompt
 
-def test_build_prompt_none_page_renders_as_na():
+def test_build_prompt_none_page_omits_page():
+    # Code chunks (page=None) must not show "Page N/A" — page is omitted entirely.
     chunks = [{"chunk_id": "x", "text": "text", "source": "file.txt", "page": None, "chunk_index": 0}]
     prompt = build_prompt("q", chunks)
-    assert "Page N/A" in prompt
+    assert "Page N/A" not in prompt
+    assert "[Source: file.txt]" in prompt
 
 def test_build_prompt_has_grounding_instruction():
     prompt = build_prompt("q", FAKE_CHUNKS)
@@ -73,6 +75,8 @@ def reranker():
 
 @pytest.fixture(scope="module")
 def pdf_store_bm25(embedder, tmp_path_factory):
+    if not pdf_available:
+        pytest.skip("ACA_Report.pdf not found")
     tmp = tmp_path_factory.mktemp("vs_gen")
     store = VectorStore(persist_dir=str(tmp), collection_name="test_gen")
     ingest_document(str(PDF), store, embedder)

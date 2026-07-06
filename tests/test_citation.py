@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from src.generation.citation import extract_citations, validate_citations
+from src.generation.citation import extract_citations, validate_citations, display_source
 from src.generation.pipeline import answer_query
 from src.embedding import Embedder, VectorStore, ingest_document
 from src.retrieval import build_bm25_from_store, CrossEncoderReranker
@@ -151,3 +151,87 @@ def test_answer_query_citation_check_catches_hallucinated_page(embedder, reranke
     check = result["citation_check"]
     assert check["all_valid"] is False
     assert any(c["page"] == 999 for c in check["invalid_citations"])
+
+
+# ── display_source ────────────────────────────────────────────────────────────
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_display_source_in_project_returns_relative():
+    abs_path = str(_PROJECT_ROOT / "src" / "retrieval" / "fusion.py")
+    result = display_source(abs_path)
+    assert result == "src/retrieval/fusion.py"
+
+
+def test_display_source_outside_project_returns_parent_slash_name():
+    # Simulate an external codebase like ATLAS
+    abs_path = "E:/ATLAS/monitoring/pattern_learning_v0_1/stats_engine.py"
+    result = display_source(abs_path)
+    assert result == "pattern_learning_v0_1/stats_engine.py"
+
+
+def test_display_source_simple_filename_unchanged():
+    assert display_source("ACA_Report.pdf") == "ACA_Report.pdf"
+    assert display_source("sample.txt") == "sample.txt"
+
+
+def test_display_source_backslash_path():
+    abs_path = str(_PROJECT_ROOT / "src" / "chunking" / "splitter.py").replace("/", "\\")
+    result = display_source(abs_path)
+    assert result == "src/chunking/splitter.py"
+
+
+# ── extract_citations handles no-page format ──────────────────────────────────
+
+def test_extract_citation_without_page():
+    """Code citations have no Page portion — regex must still match."""
+    text = "See [Source: src/retrieval/fusion.py] for details."
+    result = extract_citations(text)
+    assert len(result) == 1
+    assert result[0]["source"] == "src/retrieval/fusion.py"
+    assert result[0]["page"] is None
+
+
+def test_extract_mixed_doc_and_code_citations():
+    text = (
+        "From the docs [Source: ACA_Report.pdf, Page 5] "
+        "and the code [Source: src/retrieval/fusion.py]."
+    )
+    result = extract_citations(text)
+    assert len(result) == 2
+    assert result[0]["page"] == 5
+    assert result[1]["page"] is None
+    assert result[1]["source"] == "src/retrieval/fusion.py"
+
+
+# ── validate_citations with display_source on both sides ─────────────────────
+
+def test_validate_code_citation_matches_via_display_source():
+    """
+    The model generates [Source: src/retrieval/fusion.py] (display form).
+    The retrieved chunk has source = absolute path.
+    validate_citations must match them correctly via display_source on both sides.
+    """
+    abs_path = str(_PROJECT_ROOT / "src" / "retrieval" / "fusion.py")
+    code_chunks = [
+        {"chunk_id": "fusion_func_rrg", "text": "...", "source": abs_path,
+         "page": None, "chunk_index": 0},
+    ]
+    citations = [{"source": "src/retrieval/fusion.py", "page": None}]
+    report = validate_citations(citations, code_chunks)
+    assert report["all_valid"] is True, (
+        f"Expected valid but got invalid: {report['invalid_citations']}"
+    )
+
+
+def test_validate_hallucinated_code_citation_caught():
+    abs_path = str(_PROJECT_ROOT / "src" / "retrieval" / "fusion.py")
+    code_chunks = [
+        {"chunk_id": "fusion_func_rrg", "text": "...", "source": abs_path,
+         "page": None, "chunk_index": 0},
+    ]
+    citations = [{"source": "src/retrieval/bm25.py", "page": None}]  # wrong file
+    report = validate_citations(citations, code_chunks)
+    assert report["all_valid"] is False
+    assert report["invalid_citations"][0]["source"] == "src/retrieval/bm25.py"

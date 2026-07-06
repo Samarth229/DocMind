@@ -4,7 +4,7 @@ from pathlib import Path
 from src.ingestion import normalize_filename
 from src.embedding import Embedder, VectorStore, ingest_document, ingest_codebase
 from src.retrieval import CrossEncoderReranker, build_bm25_from_store
-from src.generation import OllamaProvider, answer_query
+from src.generation import OllamaProvider, answer_query, display_source
 
 RAW_DIR      = Path("data/raw")
 PERSIST_DIR  = "./vectorstore"
@@ -202,14 +202,16 @@ for item in reversed(st.session_state.history):
 
     with st.expander(f"📚 Retrieved chunks ({len(item['chunks_used'])})"):
         for i, chunk in enumerate(item["chunks_used"], 1):
-            page = chunk["page"] if chunk["page"] not in (None, -1) else "N/A"
+            src = display_source(chunk["source"])
+            page = chunk["page"]
+            page_str = f", page {page}" if page not in (None, -1) else ""
             score = chunk.get("rerank_score", chunk.get("rrf_score", ""))
             score_str = f"  `rerank={score:.2f}`" if isinstance(score, float) else ""
-            st.markdown(f"**#{i} — {chunk['source']}, page {page}**{score_str}")
+            st.markdown(f"**#{i} — {src}{page_str}**{score_str}")
             preview = chunk["text"][:400] + ("…" if len(chunk["text"]) > 400 else "")
             # Code chunks (page=None) must render via st.code to avoid Markdown
             # misinterpreting # comments, underscores, backticks, etc.
-            if chunk["page"] in (None, -1):
+            if page in (None, -1):
                 st.code(preview, language="python")
             else:
                 st.caption(preview)
