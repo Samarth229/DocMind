@@ -1,124 +1,162 @@
 # DocMind
 
-A local RAG (Retrieval-Augmented Generation) assistant that ingests PDFs and text documents and answers questions over them with grounded, cited answers.
+**A locally-running RAG assistant that ingests PDFs, text documents, and Python codebases, and answers questions with grounded, cited answers. No API keys, no cloud, built entirely from scratch.**
 
-Built from scratch as a resume/interview project — every pipeline stage is implemented directly (no LangChain wrappers) so the internals can be explained in depth.
+---
 
-## Setup
+### 🧠 What it is
+
+DocMind reads your documents and code, finds the right information using hybrid search (keyword + semantic), and answers **only** from what it actually found — no answer without evidence. Every response cites exactly where it came from, and DocMind independently verifies its own citations rather than trusting the LLM to get them right.
+
+> **Headline result:** Hybrid retrieval (BM25 + dense + RRF + cross-encoder reranking) improved MRR from **0.62** (dense-only) to **0.89** on a 25-query hand-labeled evaluation set.
+
+---
+
+### ⚙️ Features
+
+**Ingestion**
+- PDF and text ingestion via `pypdf`, with page-level metadata preserved
+- Python codebase ingestion with recursive directory walking
+
+**Chunking**
+- Documents: a from-scratch recursive character splitter (paragraph → sentence → word fallback, ~800 tokens, with overlap)
+- Code: AST-based chunking via `tree-sitter`, splitting by function/class boundaries so long functions are never cut mid-body
+
+**Retrieval**
+- Hybrid dense retrieval (ChromaDB, cosine similarity) + BM25 keyword search
+- Merged via Reciprocal Rank Fusion (RRF), then refined with cross-encoder reranking
+
+**Generation**
+- Local LLM via Ollama, with a grounded prompt that correctly declines to answer when the retrieved context doesn't contain the answer
+
+**Citation Validation**
+- Every cited source is checked against the chunks that were actually retrieved
+- Caught a real hallucinated citation during testing — the model cited textbook pages that were never retrieved
+
+**Interfaces**
+- Streamlit UI for interactive use
+- FastAPI REST API — `/ingest`, `/query`, `/documents`, `/health`
+- Two-click "Clear all data" reset
+
+---
+
+### 🏗️ Architecture
+
+```
+Ingestion
+   ↓
+Chunking
+   ↓
+Embedding (sentence-transformers · all-MiniLM-L6-v2)
+   ↓
+Vector Store (ChromaDB)
+   ↓
+Retrieval (hybrid dense + BM25 → RRF → cross-encoder rerank)
+   ↓
+Generation (Ollama)
+   ↓
+Citation Validation
+   ↓
+Streamlit UI / FastAPI
+```
+
+---
+
+### 🎯 Key Design Decisions
+
+| Decision | Why |
+|---|---|
+| Hybrid retrieval | Catches keyword matches that dense-only search misses |
+| Cross-encoder reranking | Recall-then-precision funnel — cast a wide net, then refine |
+| AST-based code chunking | Keeps functions and classes whole, never split mid-body |
+| Citation validation | Catches hallucinated sources before they reach the user |
+| Stable source identity | Normalized paths prevent duplicate chunks on re-ingestion |
+| No LangChain | Every component is hand-built and fully explainable |
+
+---
+
+### 📊 Evaluation
+
+Measured on a 25-query hand-labeled evaluation set, comparing dense-only retrieval against the full hybrid + reranking pipeline:
+
+| Metric | Dense-only | Hybrid + Rerank |
+|---|---|---|
+| Precision@5 | 0.20 | 0.272 |
+| Recall@5 | 0.655 | 0.857 |
+| MRR | 0.625 | 0.887 |
+
+**Per-category MRR (hybrid + rerank):**
+
+| Category | MRR |
+|---|---|
+| Easy | 1.00 |
+| Keyword | 0.93 |
+| No-answer | 1.00 |
+| Semantic | 0.71 |
+
+---
+
+### 🛠️ Tech Stack
+
+| Component | Tool |
+|---|---|
+| LLM | Ollama — `llama3.1:8b` |
+| Embeddings | sentence-transformers — `all-MiniLM-L6-v2` |
+| Vector store | ChromaDB |
+| Keyword search | `rank_bm25` |
+| Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Code parsing | `tree-sitter` |
+| PDF parsing | `pypdf` |
+| UI | Streamlit |
+| API | FastAPI |
+| Language | Python 3.10+ |
+
+---
+
+### 🚀 Setup & Running
 
 ```bash
-# Create and activate virtual environment
-python -m venv .venv
-.venv\Scripts\activate      # Windows
-# source .venv/bin/activate  # macOS/Linux
+# 1. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-# Install dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# Configure environment
+# 3. Configure environment
 cp .env.example .env
-# Edit .env to set OLLAMA_MODEL if needed (default: llama3.1:8b)
-```
 
-## Running the app
-
-```bash
-# 1. Start Ollama (must be running before the app)
+# 4. Start Ollama and pull the model
 ollama serve
-ollama pull llama3.1:8b   # or whichever model is set in .env
+ollama pull llama3.1:8b
 
-# 2. Launch the Streamlit UI
+# 5. Run the Streamlit UI
 streamlit run app.py
-```
+# → http://localhost:8501
 
-Then open http://localhost:8501, upload a PDF or .txt file, and ask questions.
-
-## Running the API
-
-Streamlit (`app.py`) and the REST API (`api/main.py`) are two independent front doors to the same underlying pipeline — both call `src/*` directly, no logic is duplicated. You can run either or both.
-
-```bash
-# Start Ollama first (same prereq as Streamlit)
-ollama serve
-
-# Launch the FastAPI server
+# 6. (Optional) Run the FastAPI server
 uvicorn api.main:app --reload
+# → http://localhost:8000/docs
 ```
 
-Then open http://localhost:8000/docs for the interactive OpenAPI UI, or call the endpoints directly:
+---
 
-```bash
-# Ingest a document
-curl -X POST http://localhost:8000/ingest \
-     -F "file=@data/raw/ACA_Report.pdf"
+### ⚠️ Known Limitations
 
-# Ask a question
-curl -X POST http://localhost:8000/query \
-     -H "Content-Type: application/json" \
-     -d '{"question": "what is the model adapter layer", "k": 5}'
+- Citation *completeness* isn't enforced — the system catches false citations, but not missing ones
+- Per-page chunking means page-boundary sentences can occasionally be split
+- No cross-file reasoning for code (each file is chunked independently)
+- AST-based chunking currently supports Python only
+- No OCR — scanned/image-only PDFs aren't supported
+- Single-user, local-only — not designed for concurrent multi-user deployment
 
-# List ingested documents
-curl http://localhost:8000/documents
+---
 
-# Health check
-curl http://localhost:8000/health
-```
+### 👤 Built By
 
-## Architecture
+**Samarth Kadam** — B.Tech CS, VIT Bhopal
+Built July 2026.
 
-The pipeline runs entirely locally:
+### 📄 License
 
-```
-PDF / TXT
-   │
-   ▼
-[Ingestion]  pypdf extracts text per page with source+page metadata
-   │
-   ▼
-[Chunking]   RecursiveCharacterSplitter (built from scratch):
-             paragraph → sentence → word fallback, ~800-token chunks, 100-token overlap
-   │
-   ▼
-[Embedding]  sentence-transformers all-MiniLM-L6-v2 (~80MB, CPU-friendly)
-   │
-   ▼
-[Vector store]  ChromaDB persisted to ./vectorstore (cosine similarity, upsert-safe)
-   │
-   ▼
-[Retrieval]  Hybrid pipeline:
-             ├─ Dense (ChromaDB cosine)  ─┐
-             └─ BM25 (rank_bm25)         ├─ RRF fusion → cross-encoder rerank
-                                         │  (cross-encoder/ms-marco-MiniLM-L-6-v2)
-                                         └─ top-k chunks
-   │
-   ▼
-[Generation]  Grounded prompt → Ollama (local LLM) → answer with inline citations
-   │
-   ▼
-[Citation validation]  Regex-parses [Source: file, Page N] from the answer,
-                       verifies each cited chunk was actually in the retrieved context
-   │
-   ▼
-[Streamlit UI / FastAPI]  Two independent entrypoints to the same pipeline:
-                           • app.py  → Streamlit interactive demo (localhost:8501)
-                           • api/main.py → REST API with OpenAPI docs (localhost:8000/docs)
-```
-
-**Key design decisions:**
-- **Hybrid retrieval (BM25 + dense + RRF):** pure dense retrieval misses exact keyword matches; BM25 catches them; RRF merges both rankings without tuning weights.
-- **Cross-encoder reranking:** bi-encoder (fast, approximate) for recall; cross-encoder (slow, precise) for final precision — classic recall-then-precision funnel.
-- **Citation validation:** LLMs can hallucinate citations; every `[Source: ...]` in the answer is checked against the actual retrieved set.
-- **No LangChain:** every stage is implemented directly to be fully explainable.
-
-## Running tests
-
-```bash
-.venv\Scripts\python -m pytest tests/ -v
-```
-
-PDF tests require `data/raw/ACA_Report.pdf` (or any PDF). Ollama tests require `ollama serve` to be running.
-
-## Requirements
-
-- Python 3.10+
-- [Ollama](https://ollama.com) running locally with your chosen model pulled
+MIT License
