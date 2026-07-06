@@ -102,6 +102,8 @@ def reranker():
 
 @pytest.fixture(scope="module")
 def pdf_store_bm25(embedder, tmp_path_factory):
+    if not pdf_available:
+        pytest.skip("ACA_Report.pdf not found")
     tmp = tmp_path_factory.mktemp("vs_cite")
     store = VectorStore(persist_dir=str(tmp), collection_name="test_cite")
     ingest_document(str(PDF), store, embedder)
@@ -124,19 +126,25 @@ def test_answer_query_has_citation_check_key(embedder, reranker, pdf_store_bm25)
 @pytest.mark.skipif(not pdf_available, reason="ACA_Report.pdf not found")
 def test_answer_query_citation_check_with_valid_citation(embedder, reranker, pdf_store_bm25):
     store, bm25 = pdf_store_bm25
-    # The mock answer cites page 22 — which is in ACA_Report.pdf's retrieved chunks
-    # for this query (confirmed in Phase 5 output).
+    # Retrieve real chunks first so the mock answer cites an actually-retrieved page.
+    # This avoids hardcoding page numbers that change across PDF versions.
+    from src.retrieval import CrossEncoderReranker, build_bm25_from_store
+    from src.retrieval.pipeline import retrieve
+    chunks = retrieve("what is the model adapter layer", store, embedder, bm25, reranker, k=5)
+    top_page = chunks[0]["page"]  # guaranteed to be in the retrieved set
+    top_source = "ACA_Report.pdf"  # doc chunks always use the normalized filename
     mock_provider = MagicMock()
     mock_provider.generate.return_value = (
-        "The adapter layer is described [Source: ACA_Report.pdf, Page 22]."
+        f"The adapter layer is described [Source: {top_source}, Page {top_page}]."
     )
     result = answer_query(
         "what is the model adapter layer", store, embedder, bm25, reranker, mock_provider
     )
     check = result["citation_check"]
     assert check["total_citations"] == 1
-    # Page 22 should be in the retrieved top-5 for this query
-    assert check["all_valid"] is True
+    assert check["all_valid"] is True, (
+        f"Expected valid citation for page {top_page}, got: {check['invalid_citations']}"
+    )
 
 @pytest.mark.skipif(not pdf_available, reason="ACA_Report.pdf not found")
 def test_answer_query_citation_check_catches_hallucinated_page(embedder, reranker, pdf_store_bm25):
@@ -165,10 +173,12 @@ def test_display_source_in_project_returns_relative():
 
 
 def test_display_source_outside_project_returns_parent_slash_name():
-    # Simulate an external codebase like ATLAS
-    abs_path = "E:/ATLAS/monitoring/pattern_learning_v0_1/stats_engine.py"
+    # Simulate any external codebase — an absolute path that doesn't live under
+    # the project root should be shortened to parent_dir/filename.
+    # Use C:/external/... so the path is absolute on Windows too.
+    abs_path = "C:/external/project/monitoring/stats_engine.py"
     result = display_source(abs_path)
-    assert result == "pattern_learning_v0_1/stats_engine.py"
+    assert result == "monitoring/stats_engine.py"
 
 
 def test_display_source_simple_filename_unchanged():

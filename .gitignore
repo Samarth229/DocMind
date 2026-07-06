@@ -37,3 +37,6 @@ Thumbs.db
 
 # Streamlit
 .streamlit/
+
+# Test cache
+.pytest_cache/
